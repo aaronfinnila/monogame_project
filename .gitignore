@@ -1,0 +1,37 @@
+# ===== .NET / C# =====
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# ===== MonoGame =====
+Content/bin/
+Content/obj/
+
+# MonoGame intermediate files
+*.mgstats
+*.mgcontent
+
+# ===== VS Code =====
+.vscode/
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# ===== OS junk =====
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ===== Logs =====
+*.log
+
+# ===== NuGet =====
+.nuget/
+packages/
+
+# ===== Optional: Rider / VS =====
+.idea/
+*.DotSettings.user
