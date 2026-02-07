@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Cryptography;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -9,6 +10,7 @@ public class Game1 : Game {
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
 
+    Circle targetCircle;
     Texture2D targetSprite;
     Texture2D crosshairSprite;
     Texture2D backgroundSprite;
@@ -19,6 +21,9 @@ public class Game1 : Game {
     bool targetExists;
     double timeCounter;
     int framesCounter;
+    Random random;
+    int targetsHit;
+    String text;
 
     public Game1() {
         _graphics = new GraphicsDeviceManager(this);
@@ -26,12 +31,14 @@ public class Game1 : Game {
         IsMouseVisible = false;
         _graphics.PreferredBackBufferWidth = 1280;
         _graphics.PreferredBackBufferHeight = 720;
-        targetX = 595;
-        targetY = 120;
         targetExists = true;
         timeCounter = 0;
         framesCounter = 0;
         timeCounter = 0;
+        targetsHit = 0;
+        text = "Shoot the target to begin";
+        random = new Random();
+        targetCircle = new Circle(new Vector2(595, 120), 45f);
     }
 
     protected override void Initialize() {
@@ -50,8 +57,21 @@ public class Game1 : Game {
         backgroundSprite = Content.Load<Texture2D>("sky");
     }
 
-    protected override void Update(GameTime gameTime) {
+    struct Circle(Vector2 Center, float radius) {
+        public Vector2 Center = Center;
+        public float radius = radius;
+    }
 
+    bool isTargetHit(Circle circle, Vector2 point) {
+        float distance = Vector2.DistanceSquared(circle.Center, point);
+        if (distance < circle.radius*circle.radius) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    protected override void Update(GameTime gameTime) {
         timeCounter += gameTime.ElapsedGameTime.TotalSeconds;
         framesCounter++;
 
@@ -74,8 +94,7 @@ public class Game1 : Game {
 
         currentMouse = Mouse.GetState();
 
-        int mouseX = currentMouse.X;
-        int mouseY = currentMouse.Y;
+        Vector2 mouseLocation = new Vector2(currentMouse.X, currentMouse.Y);
 
         bool leftClicked = false;
 
@@ -83,20 +102,20 @@ public class Game1 : Game {
             leftClicked = true;
         }
 
-        if (leftClicked == true && targetExists == true && mouseX > targetX-45 && mouseX <= targetX + 45 && mouseY > targetY-45 && mouseY <= targetY+45) {
+        if (leftClicked == true && targetExists == true && isTargetHit(targetCircle, mouseLocation) == true) {
             Console.WriteLine("Target hit!");
-            targetExists = false;
-            Console.WriteLine("mouseX: " + mouseX);
-            Console.WriteLine("mouseY: " + mouseY);
-        }
+            targetCircle.Center.X = random.Next(45, _graphics.PreferredBackBufferWidth-45);
+            targetCircle.Center.Y = random.Next(45, _graphics.PreferredBackBufferHeight-45);
+            targetsHit++;
 
-        if (targetExists && mouseX > targetX-45 && mouseX <= targetX + 45 && mouseY > targetY-45 && mouseY <= targetY+45) {
-
+            if (targetsHit == 50) {
+                text = $"Final time: {timeCounter}";
+            }
         }
 
         if (timeCounter % 3 == 0) {
-            Console.WriteLine(mouseX);
-            Console.WriteLine(mouseY);
+            Console.WriteLine(mouseLocation.X);
+            Console.WriteLine(mouseLocation.Y);
         }
 
         previousMouse = currentMouse;
@@ -109,9 +128,9 @@ public class Game1 : Game {
         _spriteBatch.Begin();
         _spriteBatch.Draw(backgroundSprite, new Vector2(0, 0), Color.White);
         if (targetExists == true) {
-        _spriteBatch.Draw(targetSprite, new Vector2(targetX, targetY), Color.White);
+        _spriteBatch.Draw(targetSprite, new Vector2(targetCircle.Center.X-45, targetCircle.Center.Y-45), Color.White);
         }
-        _spriteBatch.Draw(crosshairSprite, new Vector2(currentMouse.X, currentMouse.Y), Color.White);
+        _spriteBatch.Draw(crosshairSprite, new Vector2(currentMouse.X-25, currentMouse.Y-25), Color.White);
 
         _spriteBatch.End();
 
